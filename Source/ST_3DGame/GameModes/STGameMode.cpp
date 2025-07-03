@@ -3,3 +3,10 @@
 
 #include "STGameMode.h"
 
+#include "ST_3DGame/Character/STCharacter.h"
+
+
+ASTGameMode::ASTGameMode()
+{
+	DefaultPawnClass = ASTCharacter::StaticClass();	
+}

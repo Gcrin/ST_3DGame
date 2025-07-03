@@ -2,21 +2,21 @@
 
 
 #include "STCharacter.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 
-// Sets default values
 ASTCharacter::ASTCharacter()
 {
-	PrimaryActorTick.bCanEverTick = true;
-}
+	PrimaryActorTick.bCanEverTick =false;
+	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
+	SpringArmComponent->SetupAttachment(RootComponent);
+	SpringArmComponent->TargetArmLength = 300.0f;  
+	SpringArmComponent->bUsePawnControlRotation = true;  
 
-void ASTCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-}
-
-void ASTCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
+	CameraComponent->bUsePawnControlRotation = false;
+	
 }
 
 void ASTCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

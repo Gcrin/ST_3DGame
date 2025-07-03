@@ -14,4 +14,6 @@ class ST_3DGAME_API ASTGameMode : public AGameMode
 {
 	GENERATED_BODY()
 	
+public:
+	ASTGameMode();
 };
