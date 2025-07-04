@@ -23,7 +23,6 @@ ASTCharacter::ASTCharacter()
 	NormalSpeed = 600.0f;
 	SprintSpeedMultiplier = 1.5f;
 
-	GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 }
 
 void ASTCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -54,6 +53,13 @@ void ASTCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	BindAction(PlayerController->SprintAction, ETriggerEvent::Triggered, &ASTCharacter::StartSprint);
 	BindAction(PlayerController->SprintAction, ETriggerEvent::Completed, &ASTCharacter::StopSprint);
+}
+
+void ASTCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+
+	GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 }
 
 void ASTCharacter::Move(const FInputActionValue& Value)
