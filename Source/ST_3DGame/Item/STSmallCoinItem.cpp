@@ -11,5 +11,5 @@ ASTSmallCoinItem::ASTSmallCoinItem()
 
 void ASTSmallCoinItem::ActivateItem(AActor* Activator)
 {
-	Destroyed();
+	Super::ActivateItem(Activator);
 }

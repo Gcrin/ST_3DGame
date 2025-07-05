@@ -7,6 +7,8 @@
 #include "STItemInterface.h"
 #include "STBaseItem.generated.h"
 
+class USphereComponent;
+
 UCLASS()
 class ST_3DGAME_API ASTBaseItem : public AActor, public ISTItemInterface
 {
@@ -18,9 +20,24 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	FName ItemType;
-
-	virtual void OnItemOverlap(AActor* OverlapActor) override;
-	virtual void OnItemEndOverlap(AActor* OverlapActor) override;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Component")
+	USceneComponent* Scene;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Component")
+	USphereComponent* Collision;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Component")
+	UStaticMeshComponent* StaticMesh;
+    virtual void OnItemOverlap(
+		    UPrimitiveComponent* OverlappedComp,
+		    AActor* OtherActor,
+		    UPrimitiveComponent* OtherComp,
+		    int32 OtherBodyIndex,
+		    bool bFromSweep,
+		    const FHitResult& SweepResult) override;
+    virtual void OnItemEndOverlap(
+		    UPrimitiveComponent* OverlappedComp,
+		    AActor* OtherActor,
+		    UPrimitiveComponent* OtherComp,
+		    int32 OtherBodyIndex) override;
 	virtual void ActivateItem(AActor* Activator) override;
 	virtual FName GetItemType() const override;
 

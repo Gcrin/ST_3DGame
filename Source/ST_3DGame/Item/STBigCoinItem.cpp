@@ -11,5 +11,5 @@ ASTBigCoinItem::ASTBigCoinItem()
 
 void ASTBigCoinItem::ActivateItem(AActor* Activator)
 {
-	Destroyed();
+	Super::ActivateItem(Activator);
 }

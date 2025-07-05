@@ -16,6 +16,9 @@ class ST_3DGAME_API ASTMineItem : public ASTBaseItem
 
 public:
 	ASTMineItem();
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
+	USphereComponent* ExplosionCollision;
 
 	//폭발까지 걸리는 시간
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mine")
@@ -27,5 +30,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mine")
 	float ExplosionDamage;
 
+	FTimerHandle ExplosionTimerHandle;
+
 	virtual void ActivateItem(AActor* Activator) override;
+
+	void Explode();
 };
