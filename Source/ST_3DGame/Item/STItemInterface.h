@@ -1,0 +1,28 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/Interface.h"
+#include "STItemInterface.generated.h"
+
+UINTERFACE(MinimalAPI)
+class USTItemInterface : public UInterface
+{
+	GENERATED_BODY()
+};
+
+class ST_3DGAME_API ISTItemInterface
+{
+	GENERATED_BODY()
+
+public:
+	// 플레이어가 이 아이템의 범위에 들어왔을 때 호출
+	virtual void OnItemOverlap(AActor* OverlapActor) = 0;
+	// 플레이어가 이 아이템의 범위를 벗어났을 때 호출
+	virtual void OnItemEndOverlap(AActor* OverlapActor) = 0;
+	// 아이템이 사용되었을 때 호출
+	virtual void ActivateItem(AActor* Activator) = 0;
+	// 이 아이템의 유형(타입)을 반환
+	virtual FName GetItemType() const = 0;
+};
