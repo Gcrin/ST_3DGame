@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "ST_3DGame/Item/STCoinItem.h"
 #include "ST_3DGame/Item/STSpawnVolume.h"
+#include "ST_3DGame/System/STGameInstance.h"
 
 ASTGameState::ASTGameState(): Score(0), TotalCoinSpawnCount(40), SpawnedCoinCount(0), CollectedCoinCount(0),
                               LevelDuration(30.0f),
@@ -15,6 +16,7 @@ ASTGameState::ASTGameState(): Score(0), TotalCoinSpawnCount(40), SpawnedCoinCoun
 void ASTGameState::BeginPlay()
 {
 	Super::BeginPlay();
+	GameInstance = Cast<USTGameInstance>(GetGameInstance());
 	StartLevel();
 }
 
@@ -25,8 +27,10 @@ int32 ASTGameState::GetScore() const
 
 void ASTGameState::AddScore(int32 Amount)
 {
-	Score += Amount;
-	UE_LOG(LogTemp, Warning, TEXT("Score: %d"), Score);
+	if (GameInstance)
+	{
+		GameInstance->AddToScore(Amount);
+	}
 }
 
 void ASTGameState::OnGameOver()
@@ -36,6 +40,11 @@ void ASTGameState::OnGameOver()
 
 void ASTGameState::StartLevel()
 {
+	if (GameInstance)
+	{
+		CurrentLevelIndex = GameInstance->CurrentLevelIndex;
+	}
+
 	SpawnedCoinCount = 0;
 	CollectedCoinCount = 0;
 	TArray<AActor*> FoundVolumes;
@@ -82,7 +91,13 @@ void ASTGameState::EndLevel()
 {
 	GetWorldTimerManager().ClearTimer(LevelTimerHandle);
 
-	CurrentLevelIndex++;
+	if (GameInstance)
+	{
+		AddScore(Score);
+		CurrentLevelIndex++;
+		GameInstance->CurrentLevelIndex = CurrentLevelIndex;
+	}
+
 	if (CurrentLevelIndex >= MaxLevels)
 	{
 		OnGameOver();

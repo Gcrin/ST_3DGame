@@ -6,6 +6,7 @@
 #include "GameFramework/GameState.h"
 #include "STGameState.generated.h"
 
+class USTGameInstance;
 /**
  * 
  */
@@ -64,4 +65,8 @@ public:
 	void OnCoinCollected();
 	// 레벨을 강제 종료하고 다음 레벨로 이동
 	void EndLevel();
+
+private:
+	UPROPERTY(Transient)
+	TObjectPtr<USTGameInstance> GameInstance;
 };
