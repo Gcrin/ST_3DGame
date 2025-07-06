@@ -18,7 +18,7 @@ public:
 	ASTSpawnVolume();
 
 	UFUNCTION(BlueprintCallable, Category = "Spawning")
-	void SpawnRandomItem();
+	AActor* SpawnRandomItem();
 
 protected:
 	virtual void BeginPlay() override;
@@ -36,7 +36,7 @@ protected:
 	const FSTItemSpawnRow* GetRandomItem() const;
 	// 특정 아이템 클래스를 스폰하는 함수
 	UFUNCTION(BlueprintCallable, Category="Spawning")
-	void SpawnItem(TSubclassOf<AActor> ItemClass);
+	AActor* SpawnItem(TSubclassOf<AActor> ItemClass);
 
 private:
 	TArray<FSTItemSpawnRow> SpawnableItems;

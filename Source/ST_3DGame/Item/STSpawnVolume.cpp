@@ -16,15 +16,16 @@ ASTSpawnVolume::ASTSpawnVolume() : TotalChance(0.0f)
 	SpawningBox->SetupAttachment(Scene);
 }
 
-void ASTSpawnVolume::SpawnRandomItem()
+AActor* ASTSpawnVolume::SpawnRandomItem()
 {
 	if (const FSTItemSpawnRow* SelectedRow = GetRandomItem())
 	{
 		if (UClass* ActualClass = SelectedRow->ItemClass.Get())
 		{
-			SpawnItem(ActualClass);
+			return SpawnItem(ActualClass);
 		}
 	}
+	return nullptr;
 }
 
 void ASTSpawnVolume::BeginPlay()
@@ -68,11 +69,11 @@ const FSTItemSpawnRow* ASTSpawnVolume::GetRandomItem() const
 	return nullptr;
 }
 
-void ASTSpawnVolume::SpawnItem(TSubclassOf<AActor> ItemClass)
+AActor* ASTSpawnVolume::SpawnItem(TSubclassOf<AActor> ItemClass)
 {
-	if (!ItemClass) return;
+	if (!ItemClass) return nullptr;
 
-	GetWorld()->SpawnActor<AActor>(
+	return GetWorld()->SpawnActor<AActor>(
 		ItemClass,
 		GetRandomPointInVolume(),
 		FRotator::ZeroRotator
