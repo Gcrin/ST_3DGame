@@ -2,7 +2,7 @@
 
 
 #include "STCoinItem.h"
-#include "ST_3DGame/STGameStateBase.h"
+#include "ST_3DGame/STGameState.h"
 
 ASTCoinItem::ASTCoinItem(): PointValue(0)
 {
@@ -15,7 +15,7 @@ void ASTCoinItem::ActivateItem(AActor* Activator)
 	{
 		if (UWorld* World = GetWorld())
 		{
-			if (ASTGameStateBase* GameState = World->GetGameState<ASTGameStateBase>())
+			if (ASTGameState* GameState = World->GetGameState<ASTGameState>())
 			{
 				GameState->AddScore(PointValue);
 			}

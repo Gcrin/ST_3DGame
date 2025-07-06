@@ -32,7 +32,7 @@ int32 ASTCharacter::GetHealth() const
 void ASTCharacter::AddHealth(float Amount)
 {
 	Health = FMath::Clamp(Health + Amount, 0.0f, MaxHealth);
-	UE_LOG(LogTemp, Log, TEXT("체력 회복: "), Health);
+	UE_LOG(LogTemp, Log, TEXT("체력 회복: %f"), Health);
 }
 
 void ASTCharacter::OnDeath()

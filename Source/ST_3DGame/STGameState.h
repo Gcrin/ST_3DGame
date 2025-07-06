@@ -3,19 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameStateBase.h"
-#include "STGameStateBase.generated.h"
+#include "GameFramework/GameState.h"
+#include "STGameState.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class ST_3DGAME_API ASTGameStateBase : public AGameStateBase
+class ST_3DGAME_API ASTGameState : public AGameState
 {
 	GENERATED_BODY()
-
 public:
-	ASTGameStateBase();
+	ASTGameState();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Score")
 	int32 Score;
