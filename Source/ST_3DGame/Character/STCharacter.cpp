@@ -8,7 +8,10 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-ASTCharacter::ASTCharacter()
+ASTCharacter::ASTCharacter() : MaxHealth(100.0f),
+                               Health(MaxHealth),
+                               NormalSpeed(600.0f),
+                               SprintSpeedMultiplier(1.5f)
 {
 	PrimaryActorTick.bCanEverTick = false;
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
@@ -19,10 +22,36 @@ ASTCharacter::ASTCharacter()
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
 	CameraComponent->bUsePawnControlRotation = false;
+}
 
-	NormalSpeed = 600.0f;
-	SprintSpeedMultiplier = 1.5f;
+int32 ASTCharacter::GetHealth() const
+{
+	return static_cast<int32>(Health);
+}
 
+void ASTCharacter::AddHealth(float Amount)
+{
+	Health = FMath::Clamp(Health + Amount, 0.0f, MaxHealth);
+	UE_LOG(LogTemp, Log, TEXT("체력 회복: "), Health);
+}
+
+void ASTCharacter::OnDeath()
+{
+	UE_LOG(LogTemp, Error, TEXT("캐릭터 사망"));
+}
+
+float ASTCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
+                               AActor* DamageCauser)
+{
+	Health = FMath::Clamp(Health - Damage, 0.0f, MaxHealth);
+	UE_LOG(LogTemp, Warning, TEXT("체력: %f"), Health);
+
+	if (Health <= 0.0f)
+	{
+		OnDeath();
+	}
+
+	return Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
 }
 
 void ASTCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -65,7 +94,7 @@ void ASTCharacter::BeginPlay()
 void ASTCharacter::Move(const FInputActionValue& Value)
 {
 	if (!Controller) return;
-	
+
 	const FVector2D MoveInput = Value.Get<FVector2D>();
 
 	if (!FMath::IsNearlyZero(MoveInput.X))
@@ -98,7 +127,7 @@ void ASTCharacter::StopJump(const FInputActionValue& Value)
 void ASTCharacter::Look(const FInputActionValue& Value)
 {
 	FVector2D LookInput = Value.Get<FVector2D>();
-	
+
 	AddControllerYawInput(LookInput.X);
 	AddControllerPitchInput(LookInput.Y);
 }
