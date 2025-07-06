@@ -3,6 +3,7 @@
 
 #include "STGameMode.h"
 
+#include "ST_3DGame/STGameStateBase.h"
 #include "ST_3DGame/Character/STCharacter.h"
 #include "ST_3DGame/Character/STPlayerController.h"
 
@@ -11,4 +12,5 @@ ASTGameMode::ASTGameMode()
 {
 	DefaultPawnClass = ASTCharacter::StaticClass();
 	PlayerControllerClass = ASTPlayerController::StaticClass();
+	GameStateClass = ASTGameStateBase::StaticClass();
 }
