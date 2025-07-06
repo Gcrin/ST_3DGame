@@ -18,19 +18,19 @@ public:
 	ASTPlayerController();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
-	UInputMappingContext* InputMappingContext;
+	TObjectPtr<UInputMappingContext> InputMappingContext;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
-	UInputAction* MoveAction;
+	TObjectPtr<UInputAction> MoveAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
-	UInputAction* LookAction;
+	TObjectPtr<UInputAction> LookAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
-	UInputAction* JumpAction;
+	TObjectPtr<UInputAction> JumpAction;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
-	UInputAction* SprintAction;
+	TObjectPtr<UInputAction> SprintAction;
 
 	virtual void BeginPlay() override;
 };
