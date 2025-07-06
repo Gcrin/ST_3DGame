@@ -2,7 +2,8 @@
 
 
 #include "STCoinItem.h"
-#include "ST_3DGame/STGameState.h"
+#include "ST_3DGame/Character/STCharacter.h"
+#include "ST_3DGame/GameModes/STGameState.h"
 
 ASTCoinItem::ASTCoinItem(): PointValue(0)
 {
@@ -11,15 +12,20 @@ ASTCoinItem::ASTCoinItem(): PointValue(0)
 
 void ASTCoinItem::ActivateItem(AActor* Activator)
 {
-	if (Activator && Activator->ActorHasTag("Player"))
+	ASTCharacter* PlayerCharacter = Cast<ASTCharacter>(Activator);
+	if (!PlayerCharacter)
 	{
-		if (UWorld* World = GetWorld())
-		{
-			if (ASTGameState* GameState = World->GetGameState<ASTGameState>())
-			{
-				GameState->AddScore(PointValue);
-			}
-		}
-		DestroyItem();
+		return;
 	}
+	
+	ASTGameState* GameState = GetWorld()->GetGameState<ASTGameState>();
+	if (!GameState)
+	{
+		return;
+	}
+	
+	GameState->AddScore(PointValue);
+	GameState->OnCoinCollected();
+	
+	DestroyItem();
 }

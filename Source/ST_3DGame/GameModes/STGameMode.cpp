@@ -3,7 +3,7 @@
 
 #include "STGameMode.h"
 
-#include "ST_3DGame/STGameState.h"
+#include "STGameState.h"
 #include "ST_3DGame/Character/STCharacter.h"
 #include "ST_3DGame/Character/STPlayerController.h"
 
