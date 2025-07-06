@@ -3,6 +3,7 @@
 
 #include "STMineItem.h"
 #include "Components/SphereComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 ASTMineItem::ASTMineItem(): ExplosionDelay(5.0f), ExplosionRadius(300.0f), ExplosionDamage(30.0f)
 {
@@ -28,8 +29,7 @@ void ASTMineItem::Explode()
 	{
 		if (Actor && Actor->ActorHasTag("Player"))
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Red,
-			                                 FString::Printf(TEXT("플레이어가 지뢰에 데미지를 %f 입음"), ExplosionDamage));
+			UGameplayStatics::ApplyDamage(Actor, ExplosionDamage, nullptr, this, UDamageType::StaticClass());
 		}
 	}
 	DestroyItem();

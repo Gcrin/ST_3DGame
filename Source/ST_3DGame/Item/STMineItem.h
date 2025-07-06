@@ -18,7 +18,7 @@ public:
 	ASTMineItem();
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
-	USphereComponent* ExplosionCollision;
+	TObjectPtr<USphereComponent> ExplosionCollision;
 
 	//폭발까지 걸리는 시간
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mine")

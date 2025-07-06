@@ -21,11 +21,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
 	FName ItemType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Component")
-	USceneComponent* Scene;
+	TObjectPtr<USceneComponent> Scene;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Component")
-	USphereComponent* Collision;
+	TObjectPtr<USphereComponent> Collision;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Component")
-	UStaticMeshComponent* StaticMesh;
+	TObjectPtr<UStaticMeshComponent> StaticMesh;
     virtual void OnItemOverlap(
 		    UPrimitiveComponent* OverlappedComp,
 		    AActor* OtherActor,
