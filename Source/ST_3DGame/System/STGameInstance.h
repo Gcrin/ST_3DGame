@@ -16,12 +16,20 @@ class ST_3DGAME_API USTGameInstance : public UGameInstance
 
 public:
 	USTGameInstance();
-	
+
+
+	UFUNCTION(BlueprintCallable, Category = "GameData")
+	void AddToScore(int32 Amount);
+	UFUNCTION(BlueprintCallable, Category = "GameData")
+	void SetCurrentLevelIndex(int32 NewLevelIndex);
+	UFUNCTION(BlueprintCallable, Category = "GameData")
+	int32 GetTotalScore() const;
+	UFUNCTION(BlueprintCallable, Category = "GameData")
+	int32 GetCurrentLevelIndex() const;
+
+protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "GameData")
 	int32 TotalScore;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "GameData")
 	int32 CurrentLevelIndex;
-	
-	UFUNCTION(BlueprintCallable, Category = "GameData")
-	void AddToScore(int32 Amount);
 };

@@ -42,7 +42,7 @@ void ASTGameState::StartLevel()
 {
 	if (GameInstance)
 	{
-		CurrentLevelIndex = GameInstance->CurrentLevelIndex;
+		CurrentLevelIndex = GameInstance->GetCurrentLevelIndex();
 	}
 
 	SpawnedCoinCount = 0;
@@ -95,7 +95,7 @@ void ASTGameState::EndLevel()
 	{
 		AddScore(Score);
 		CurrentLevelIndex++;
-		GameInstance->CurrentLevelIndex = CurrentLevelIndex;
+		GameInstance->SetCurrentLevelIndex(CurrentLevelIndex);
 	}
 
 	if (CurrentLevelIndex >= MaxLevels)
