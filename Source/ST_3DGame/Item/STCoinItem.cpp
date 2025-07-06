@@ -2,6 +2,7 @@
 
 
 #include "STCoinItem.h"
+#include "ST_3DGame/STGameStateBase.h"
 
 ASTCoinItem::ASTCoinItem(): PointValue(0)
 {
@@ -12,8 +13,13 @@ void ASTCoinItem::ActivateItem(AActor* Activator)
 {
 	if (Activator && Activator->ActorHasTag("Player"))
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green,
-		                                 FString::Printf(TEXT("%d 포인트를 얻음"), PointValue));
+		if (UWorld* World = GetWorld())
+		{
+			if (ASTGameStateBase* GameState = World->GetGameState<ASTGameStateBase>())
+			{
+				GameState->AddScore(PointValue);
+			}
+		}
 		DestroyItem();
 	}
 }
