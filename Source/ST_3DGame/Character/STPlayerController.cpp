@@ -124,6 +124,7 @@ void ASTPlayerController::StartGame()
 	}
 
 	UGameplayStatics::OpenLevel(GetWorld(), FName("BasicLevel"));
+	SetPause(false);
 }
 
 void ASTPlayerController::BeginPlay()

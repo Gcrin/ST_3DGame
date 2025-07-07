@@ -45,6 +45,7 @@ void ASTGameState::OnGameOver()
 {
 	if (ASTPlayerController* STPlayerController = Cast<ASTPlayerController>(GetWorld()->GetFirstPlayerController()))
 	{
+		STPlayerController->SetPause(true);
 		STPlayerController->ShowMainMenu(true);
 	}
 }
@@ -182,7 +183,7 @@ void ASTGameState::UpdateHUD()
 	{
 		if (ASTCharacter* PlayerCharacter = Cast<ASTCharacter>(STPlayerController->GetPawn()))
 		{
-			HealthBar->SetPercent(PlayerCharacter->GetHealth() / PlayerCharacter->GetMaxHealth());
+			HealthBar->SetPercent(static_cast<float>(PlayerCharacter->GetHealth()) / PlayerCharacter->GetMaxHealth());
 		}
 	}
 }

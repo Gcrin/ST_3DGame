@@ -9,6 +9,7 @@
 #include "Components/WidgetComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "ST_3DGame/GameModes/STGameState.h"
 
 ASTCharacter::ASTCharacter() : MaxHealth(100.0f),
                                Health(MaxHealth),
@@ -48,7 +49,10 @@ void ASTCharacter::AddHealth(float Amount)
 
 void ASTCharacter::OnDeath()
 {
-	UE_LOG(LogTemp, Error, TEXT("캐릭터 사망"));
+	if (ASTGameState* STGameState = GetWorld() ? GetWorld()->GetGameState<ASTGameState>() : nullptr)
+	{
+		STGameState->OnGameOver();
+	}
 }
 
 float ASTCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
@@ -115,8 +119,9 @@ void ASTCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UpdateOverheadWidget();
+	Health = MaxHealth;
 	GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+	UpdateOverheadWidget();
 }
 
 void ASTCharacter::Move(const FInputActionValue& Value)
