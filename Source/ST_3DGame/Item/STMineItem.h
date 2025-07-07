@@ -21,6 +21,8 @@ protected:
 	TObjectPtr<USphereComponent> ExplosionCollision;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effects")
 	TObjectPtr<UParticleSystem> ExplosionParticle;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effects")
+	TObjectPtr<USoundBase> ExplosionSound;
 
 	//폭발까지 걸리는 시간
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mine")

@@ -57,6 +57,11 @@ void ASTBaseItem::ActivateItem(AActor* Activator)
 			GetWorld(), PickupParticle, GetActorLocation(), GetActorRotation(), true);
 	}
 
+	if (PickupSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), PickupSound, GetActorLocation());
+	}
+
 	if (Particle)
 	{
 		FTimerHandle DestroyParticleTimerHandle;
