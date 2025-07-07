@@ -11,6 +11,8 @@ ASTHealingItem::ASTHealingItem(): HealAmount(20)
 
 void ASTHealingItem::ActivateItem(AActor* Activator)
 {
+	Super::ActivateItem(Activator);
+
 	if (Activator && Activator->ActorHasTag("Player"))
 	{
 		if (ASTCharacter* PlayerCharacter = Cast<ASTCharacter>(Activator))

@@ -4,9 +4,11 @@
 #include "STBaseItem.h"
 
 #include "Components/SphereComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
 // Sets default values
-ASTBaseItem::ASTBaseItem()
+ASTBaseItem::ASTBaseItem() : ParticleDuration(2.0f)
 {
 	PrimaryActorTick.bCanEverTick = false;
 
@@ -48,7 +50,31 @@ void ASTBaseItem::OnItemEndOverlap(
 
 void ASTBaseItem::ActivateItem(AActor* Activator)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 2.0f, FColor::Green, FString::Printf(TEXT("아이템 사용")));
+	UParticleSystemComponent* Particle = nullptr;
+	if (PickupParticle)
+	{
+		Particle = UGameplayStatics::SpawnEmitterAtLocation(
+			GetWorld(), PickupParticle, GetActorLocation(), GetActorRotation(), true);
+	}
+
+	if (Particle)
+	{
+		FTimerHandle DestroyParticleTimerHandle;
+		TWeakObjectPtr WeakParticle = Particle;
+						
+		GetWorld()->GetTimerManager().SetTimer(
+			DestroyParticleTimerHandle,
+			[WeakParticle]()
+			{
+					if (WeakParticle.IsValid())
+					{
+							WeakParticle->DestroyComponent();
+					}
+			},
+			ParticleDuration,
+			false
+		);
+	}
 }
 
 FName ASTBaseItem::GetItemType() const

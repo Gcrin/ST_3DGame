@@ -26,6 +26,10 @@ protected:
 	TObjectPtr<USphereComponent> Collision;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Component")
 	TObjectPtr<UStaticMeshComponent> StaticMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effects")
+	TObjectPtr<UParticleSystem> PickupParticle;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effects")
+	float ParticleDuration;
     virtual void OnItemOverlap(
 		    UPrimitiveComponent* OverlappedComp,
 		    AActor* OtherActor,

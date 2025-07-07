@@ -4,8 +4,9 @@
 #include "STMineItem.h"
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
-ASTMineItem::ASTMineItem(): ExplosionDelay(5.0f), ExplosionRadius(300.0f), ExplosionDamage(30.0f)
+ASTMineItem::ASTMineItem(): ExplosionDelay(5.0f), ExplosionRadius(300.0f), ExplosionDamage(30.0f), bHasExploded(false)
 {
 	ItemType = "Mine";
 
@@ -17,11 +18,26 @@ ASTMineItem::ASTMineItem(): ExplosionDelay(5.0f), ExplosionRadius(300.0f), Explo
 
 void ASTMineItem::ActivateItem(AActor* Activator)
 {
+	if (bHasExploded)
+	{
+		return;
+	}
+	Super::ActivateItem(Activator);
+
 	GetWorldTimerManager().SetTimer(ExplosionTimerHandle, this, &ASTMineItem::Explode, ExplosionDelay);
+	bHasExploded = true;
 }
 
 void ASTMineItem::Explode()
 {
+	UParticleSystemComponent* Particle = nullptr;
+
+	if (ExplosionParticle)
+	{
+		Particle = UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionParticle, GetActorLocation(),
+		                                                    GetActorRotation(), false);
+	}
+
 	TArray<AActor*> OverlappingActors;
 	ExplosionCollision->GetOverlappingActors(OverlappingActors);
 
@@ -33,4 +49,23 @@ void ASTMineItem::Explode()
 		}
 	}
 	DestroyItem();
+
+	if (Particle)
+	{
+		FTimerHandle DestroyParticleTimerHandle;
+		TWeakObjectPtr WeakParticle = Particle;
+						
+		GetWorld()->GetTimerManager().SetTimer(
+			DestroyParticleTimerHandle,
+			[WeakParticle]()
+			{
+					if (WeakParticle.IsValid())
+					{
+							WeakParticle->DestroyComponent();
+					}
+			},
+			2.0f,
+			false
+		);
+	}
 }

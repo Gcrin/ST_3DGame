@@ -12,6 +12,8 @@ ASTCoinItem::ASTCoinItem(): PointValue(0)
 
 void ASTCoinItem::ActivateItem(AActor* Activator)
 {
+	Super::ActivateItem(Activator);
+	
 	ASTCharacter* PlayerCharacter = Cast<ASTCharacter>(Activator);
 	if (!PlayerCharacter)
 	{

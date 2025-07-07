@@ -19,6 +19,8 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
 	TObjectPtr<USphereComponent> ExplosionCollision;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item|Effects")
+	TObjectPtr<UParticleSystem> ExplosionParticle;
 
 	//폭발까지 걸리는 시간
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mine")
@@ -30,6 +32,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mine")
 	float ExplosionDamage;
 
+	bool bHasExploded;
 	FTimerHandle ExplosionTimerHandle;
 
 	virtual void ActivateItem(AActor* Activator) override;
