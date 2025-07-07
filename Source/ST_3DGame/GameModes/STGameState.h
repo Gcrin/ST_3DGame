@@ -36,13 +36,13 @@ public:
 	int32 CollectedCoinCount;
 	
 	// 각 레벨이 유지되는 시간 (초 단위)
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Level")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Level")
 	float LevelDuration;
 	// 현재 진행 중인 레벨 인덱스
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Level")
 	int32 CurrentLevelIndex;
 	// 전체 레벨의 개수
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Level")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Level")
 	int32 MaxLevels;
 	// 실제 레벨 맵 이름 배열. 여기 있는 인덱스를 차례대로 연동
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Level")

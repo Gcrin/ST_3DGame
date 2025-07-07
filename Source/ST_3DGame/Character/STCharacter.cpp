@@ -29,6 +29,11 @@ int32 ASTCharacter::GetHealth() const
 	return static_cast<int32>(Health);
 }
 
+int32 ASTCharacter::GetMaxHealth() const
+{
+	return static_cast<int32>(MaxHealth);
+}
+
 void ASTCharacter::AddHealth(float Amount)
 {
 	Health = FMath::Clamp(Health + Amount, 0.0f, MaxHealth);

@@ -3,8 +3,10 @@
 
 #include "STGameState.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "Kismet/GameplayStatics.h"
+#include "ST_3DGame/Character/STCharacter.h"
 #include "ST_3DGame/Character/STPlayerController.h"
 #include "ST_3DGame/Item/STCoinItem.h"
 #include "ST_3DGame/Item/STSpawnVolume.h"
@@ -159,6 +161,21 @@ void ASTGameState::UpdateHUD()
 
 	if (UTextBlock* LevelIndexText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("Level"))))
 	{
-		LevelIndexText->SetText(FText::FromString(FString::Printf(TEXT("Level: %d"), CurrentLevelIndex + 1)));
+		if (CurrentLevelIndex >= MaxLevels)
+		{
+			LevelIndexText->SetText(FText::FromString(FString::Printf(TEXT(""))));
+		}
+		else
+		{
+			LevelIndexText->SetText(FText::FromString(FString::Printf(TEXT("Level: %d"), CurrentLevelIndex + 1)));
+		}
+	}
+
+	if (UProgressBar* HealthBar = Cast<UProgressBar>(HUDWidget->GetWidgetFromName(TEXT("HealthBar"))))
+	{
+		if (ASTCharacter* PlayerCharacter = Cast<ASTCharacter>(STPlayerController->GetPawn()))
+		{
+			HealthBar->SetPercent(PlayerCharacter->GetHealth() / PlayerCharacter->GetMaxHealth());
+		}
 	}
 }
