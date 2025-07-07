@@ -32,8 +32,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
 	TObjectPtr<UInputAction> SprintAction;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
 	TSubclassOf<UUserWidget> HUDWidgetClass;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HUD")
+	UUserWidget* HUDWidgetInstance;
+		
+	UFUNCTION(BlueprintPure, Category = "HUD")
+	UUserWidget* GetHUDWidget() const;
 	
 protected:
 	virtual void BeginPlay() override;

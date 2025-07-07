@@ -2,7 +2,10 @@
 
 
 #include "STGameState.h"
+#include "Blueprint/UserWidget.h"
+#include "Components/TextBlock.h"
 #include "Kismet/GameplayStatics.h"
+#include "ST_3DGame/Character/STPlayerController.h"
 #include "ST_3DGame/Item/STCoinItem.h"
 #include "ST_3DGame/Item/STSpawnVolume.h"
 #include "ST_3DGame/System/STGameInstance.h"
@@ -17,7 +20,10 @@ void ASTGameState::BeginPlay()
 {
 	Super::BeginPlay();
 	GameInstance = Cast<USTGameInstance>(GetGameInstance());
+	UpdateHUD();
 	StartLevel();
+
+	GetWorldTimerManager().SetTimer(HUDUpdateTimerHandle, this, &ASTGameState::UpdateHUD, 0.1f, true);
 }
 
 int32 ASTGameState::GetScore() const
@@ -35,6 +41,7 @@ void ASTGameState::AddScore(int32 Amount)
 
 void ASTGameState::OnGameOver()
 {
+	UpdateHUD();
 	UE_LOG(LogTemp, Warning, TEXT("Game Over"));
 }
 
@@ -69,6 +76,7 @@ void ASTGameState::StartLevel()
 		}
 	}
 	GetWorldTimerManager().SetTimer(LevelTimerHandle, this, &ASTGameState::OnLevelTimeUp, LevelDuration, false);
+	UpdateHUD();
 	UE_LOG(LogTemp, Warning, TEXT("레벨 %d 시작! 스폰된 코인: %d개"), CurrentLevelIndex + 1, SpawnedCoinCount);
 }
 
@@ -111,5 +119,46 @@ void ASTGameState::EndLevel()
 	else
 	{
 		OnGameOver();
+	}
+}
+
+void ASTGameState::UpdateHUD()
+{
+	ASTPlayerController* STPlayerController = Cast<ASTPlayerController>(GetWorld()->GetFirstPlayerController());
+	if (!STPlayerController)
+	{
+		return;
+	}
+
+	UUserWidget* HUDWidget = STPlayerController->GetHUDWidget();
+	if (!HUDWidget)
+	{
+		return;
+	}
+
+	if (UTextBlock* TimeText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("Time"))))
+	{
+		float RemainingTime = GetWorldTimerManager().GetTimerRemaining(LevelTimerHandle);
+		if (RemainingTime == -1.0f)
+		{
+			TimeText->SetText(FText::FromString(FString::Printf(TEXT("종료"))));
+		}
+		else
+		{
+			TimeText->SetText(FText::FromString(FString::Printf(TEXT("Time: %.1f"), RemainingTime)));
+		}
+	}
+
+	if (UTextBlock* ScoreText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("Score"))))
+	{
+		if (GameInstance)
+		{
+			ScoreText->SetText(FText::FromString(FString::Printf(TEXT("Score: %d"), GameInstance->GetTotalScore())));
+		}
+	}
+
+	if (UTextBlock* LevelIndexText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("Level"))))
+	{
+		LevelIndexText->SetText(FText::FromString(FString::Printf(TEXT("Level: %d"), CurrentLevelIndex + 1)));
 	}
 }
