@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "STCharacter.generated.h"
 
+class UWidgetComponent;
 class USpringArmComponent;
 class UCameraComponent;
 
@@ -23,13 +24,15 @@ public:
 	int32 GetHealth() const;
 	UFUNCTION(BlueprintPure, Category = "Health")
 	int32 GetMaxHealth() const;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	TObjectPtr<UWidgetComponent> OverheadWidget;
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	void AddHealth(float Amount);
 	UFUNCTION(BlueprintCallable, Category = "Health")
 	virtual void OnDeath();
 	virtual float TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
-
+	void UpdateOverheadWidget();
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<USpringArmComponent> SpringArmComponent;

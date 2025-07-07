@@ -5,6 +5,8 @@
 #include "ST_3DGame/Character/STPlayerController.h"
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Components/TextBlock.h"
+#include "Components/WidgetComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -22,6 +24,10 @@ ASTCharacter::ASTCharacter() : MaxHealth(100.0f),
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
 	CameraComponent->bUsePawnControlRotation = false;
+
+	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
+	OverheadWidget->SetupAttachment(GetMesh());
+	OverheadWidget->SetWidgetSpace(EWidgetSpace::Screen);
 }
 
 int32 ASTCharacter::GetHealth() const
@@ -37,7 +43,7 @@ int32 ASTCharacter::GetMaxHealth() const
 void ASTCharacter::AddHealth(float Amount)
 {
 	Health = FMath::Clamp(Health + Amount, 0.0f, MaxHealth);
-	UE_LOG(LogTemp, Log, TEXT("체력 회복: %f"), Health);
+	UpdateOverheadWidget();
 }
 
 void ASTCharacter::OnDeath()
@@ -50,13 +56,29 @@ float ASTCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AC
 {
 	Health = FMath::Clamp(Health - Damage, 0.0f, MaxHealth);
 	UE_LOG(LogTemp, Warning, TEXT("체력: %f"), Health);
-
+	UpdateOverheadWidget();
 	if (Health <= 0.0f)
 	{
 		OnDeath();
 	}
 
 	return Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+}
+
+void ASTCharacter::UpdateOverheadWidget()
+{
+	if (!OverheadWidget) return;
+
+	const UUserWidget* OverheadWidgetInstance = OverheadWidget->GetUserWidgetObject();
+	if (!OverheadWidgetInstance)
+	{
+		return;
+	}
+
+	if (UTextBlock* HPText = Cast<UTextBlock>(OverheadWidgetInstance->GetWidgetFromName(TEXT("OverHeadHP"))))
+	{
+		HPText->SetText(FText::FromString(FString::Printf(TEXT("%.0f / %.0f"), Health, MaxHealth)));
+	}
 }
 
 void ASTCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -93,6 +115,7 @@ void ASTCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	UpdateOverheadWidget();
 	GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 }
 
