@@ -13,6 +13,11 @@ void USTGameInstance::AddToScore(int32 Amount)
 	UE_LOG(LogTemp, Warning, TEXT("총 점수 업데이트 : %d"), TotalScore);
 }
 
+void USTGameInstance::SetTotalScore(int32 NewTotalScore)
+{
+	TotalScore = NewTotalScore;
+}
+
 int32 USTGameInstance::GetTotalScore() const
 {
 	return TotalScore;

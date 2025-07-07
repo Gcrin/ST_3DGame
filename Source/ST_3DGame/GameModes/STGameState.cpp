@@ -43,12 +43,19 @@ void ASTGameState::AddScore(int32 Amount)
 
 void ASTGameState::OnGameOver()
 {
-	UpdateHUD();
-	UE_LOG(LogTemp, Warning, TEXT("Game Over"));
+	if (ASTPlayerController* STPlayerController = Cast<ASTPlayerController>(GetWorld()->GetFirstPlayerController()))
+	{
+		STPlayerController->ShowMainMenu(true);
+	}
 }
 
 void ASTGameState::StartLevel()
 {
+	if (ASTPlayerController* STPlayerController = Cast<ASTPlayerController>(GetWorld()->GetFirstPlayerController()))
+	{
+		STPlayerController->ShowGameHUD();
+	}
+	
 	if (GameInstance)
 	{
 		CurrentLevelIndex = GameInstance->GetCurrentLevelIndex();

@@ -21,6 +21,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "GameData")
 	void AddToScore(int32 Amount);
 	UFUNCTION(BlueprintCallable, Category = "GameData")
+	void SetTotalScore(int32 NewTotalScore);
+	UFUNCTION(BlueprintCallable, Category = "GameData")
 	void SetCurrentLevelIndex(int32 NewLevelIndex);
 	UFUNCTION(BlueprintCallable, Category = "GameData")
 	int32 GetTotalScore() const;
