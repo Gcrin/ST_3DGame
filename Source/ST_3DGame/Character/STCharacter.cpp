@@ -11,10 +11,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "ST_3DGame/GameModes/STGameState.h"
 
-ASTCharacter::ASTCharacter() : MaxHealth(100.0f),
-                               Health(MaxHealth),
-                               NormalSpeed(600.0f),
-                               SprintSpeedMultiplier(1.5f)
+ASTCharacter::ASTCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
@@ -29,6 +26,8 @@ ASTCharacter::ASTCharacter() : MaxHealth(100.0f),
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(GetMesh());
 	OverheadWidget->SetWidgetSpace(EWidgetSpace::Screen);
+
+	Health = MaxHealth;
 }
 
 int32 ASTCharacter::GetHealth() const

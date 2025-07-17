@@ -40,9 +40,9 @@ protected:
 	TObjectPtr<UCameraComponent> CameraComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float NormalSpeed;
+	float NormalSpeed = 600.0f;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	float SprintSpeedMultiplier;
+	float SprintSpeedMultiplier = 1.5f;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
@@ -62,7 +62,7 @@ protected:
 	void StopSprint(const FInputActionValue& Value);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Health")
-	float MaxHealth;
+	float MaxHealth = 100.0f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Health")
 	float Health;
 };
