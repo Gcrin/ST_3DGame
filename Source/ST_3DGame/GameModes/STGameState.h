@@ -7,9 +7,21 @@
 #include "STGameState.generated.h"
 
 class USTGameInstance;
-/**
- * 
- */
+
+USTRUCT(BlueprintType)
+struct FWaveData
+{
+	GENERATED_BODY()
+
+	// 해당 웨이브에서 스폰할 아이템의 총 개수
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave")
+	int32 TotalItemSpawnCount;
+
+	// 해당 웨이브의 제한 시간
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave")
+	float WaveDuration;
+};
+
 UCLASS()
 class ST_3DGAME_API ASTGameState : public AGameState
 {
@@ -17,60 +29,48 @@ class ST_3DGAME_API ASTGameState : public AGameState
 
 public:
 	ASTGameState();
-
-protected:
-	virtual void BeginPlay() override;
-
-public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Score")
-	int32 Score;
 	
-	//각 레벨에서 스폰할 코인의 총 개수
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Coin")
-	int32 TotalCoinSpawnCount;
-	// 현재 레벨에서 스폰된 코인 개수
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Coin")
-	int32 SpawnedCoinCount;
-	// 플레이어가 수집한 코인 개수
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Coin")
-	int32 CollectedCoinCount;
-	
-	// 각 레벨이 유지되는 시간 (초 단위)
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Level")
-	float LevelDuration;
-	// 현재 진행 중인 레벨 인덱스
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Level")
-	int32 CurrentLevelIndex;
-	// 전체 레벨의 개수
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Level")
-	int32 MaxLevels;
-	// 실제 레벨 맵 이름 배열. 여기 있는 인덱스를 차례대로 연동
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Level")
-	TArray<FName> LevelMapNames;
-	// 매 레벨이 끝나기 전까지 시간이 흐르도록 관리하는 타이머
-	FTimerHandle LevelTimerHandle;
-	FTimerHandle HUDUpdateTimerHandle;
-
 	UFUNCTION(BlueprintPure, Category="Score")
 	int32 GetScore() const;
 	UFUNCTION(BlueprintCallable, Category="Score")
 	void AddScore(int32 Amount);
 	// 게임이 완전히 끝났을 때 (모든 레벨 종료) 실행되는 함수
-	UFUNCTION(BlueprintCallable, Category = "Level")
+	UFUNCTION(BlueprintCallable, Category = "Wave")
 	void OnGameOver();
-	// 레벨을 시작할 때, 아이템 스폰 및 타이머 설정
-	void StartLevel();
-	// 레벨 제한 시간이 만료되었을 때 호출
-	void OnLevelTimeUp();
-	// 코인을 주웠을 때 호출
-	void OnCoinCollected();
-	// 레벨을 강제 종료하고 다음 레벨로 이동
-	void EndLevel();
 
 	void UpdateHUD();
+
+	// 코인을 주웠을 때 호출
+	void OnCoinCollected();
+	// 레벨을 시작할 때, 아이템 스폰 및 타이머 설정
+	void StartWave();
+	// 레벨을 강제 종료하고 다음 레벨로 이동
+	void EndWave(bool bIsTimeUp);
+
+protected:
+	virtual void BeginPlay() override;
+	
+	// 레벨 제한 시간이 만료되었을 때 호출
+	void OnWaveTimeUp();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave", meta = (AllowPrivateAccess = "true"))
+	TArray<FWaveData> WaveSettings;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wave", meta = (AllowPrivateAccess = "true"))
+	int32 CurrentWaveIndex = 0;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Score", meta = (AllowPrivateAccess = "true"))
+	int32 Score = 0;
+	// 현재 레벨에서 스폰된 코인 개수
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Coin", meta = (AllowPrivateAccess = "true"))
+	int32 SpawnedCoinCount = 0;
+	// 플레이어가 수집한 코인 개수
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Coin", meta = (AllowPrivateAccess = "true"))
+	int32 CollectedCoinCount = 0;
 
 private:
 	UPROPERTY(Transient)
 	TObjectPtr<USTGameInstance> GameInstance;
-
+	// 매 레벨이 끝나기 전까지 시간이 흐르도록 관리하는 타이머
+	FTimerHandle WaveTimerHandle;
+	FTimerHandle HUDUpdateTimerHandle;
 };

@@ -12,10 +12,18 @@
 #include "ST_3DGame/Item/STSpawnVolume.h"
 #include "ST_3DGame/System/STGameInstance.h"
 
-ASTGameState::ASTGameState(): Score(0), TotalCoinSpawnCount(40), SpawnedCoinCount(0), CollectedCoinCount(0),
-                              LevelDuration(30.0f),
-                              CurrentLevelIndex(0), MaxLevels(3)
+ASTGameState::ASTGameState()
 {
+	if (WaveSettings.Num() == 0)
+	{
+		WaveSettings.AddDefaulted();
+        
+		if (WaveSettings.IsValidIndex(0))
+		{
+			WaveSettings[0].TotalItemSpawnCount = 40;
+			WaveSettings[0].WaveDuration = 30.f;
+		}
+	}
 }
 
 void ASTGameState::BeginPlay()
@@ -23,7 +31,9 @@ void ASTGameState::BeginPlay()
 	Super::BeginPlay();
 	GameInstance = Cast<USTGameInstance>(GetGameInstance());
 	UpdateHUD();
-	StartLevel();
+
+	CurrentWaveIndex = 0;
+	StartWave();
 
 	GetWorldTimerManager().SetTimer(HUDUpdateTimerHandle, this, &ASTGameState::UpdateHUD, 0.1f, true);
 }
@@ -50,20 +60,25 @@ void ASTGameState::OnGameOver()
 	}
 }
 
-void ASTGameState::StartLevel()
+void ASTGameState::StartWave()
 {
+	if (!WaveSettings.IsValidIndex(CurrentWaveIndex))
+	{
+		OnGameOver();
+		return;
+	}
+
+
+	const FWaveData& CurrentWaveData = WaveSettings[CurrentWaveIndex];
+
 	if (ASTPlayerController* STPlayerController = Cast<ASTPlayerController>(GetWorld()->GetFirstPlayerController()))
 	{
 		STPlayerController->ShowGameHUD();
 	}
-	
-	if (GameInstance)
-	{
-		CurrentLevelIndex = GameInstance->GetCurrentLevelIndex();
-	}
 
 	SpawnedCoinCount = 0;
 	CollectedCoinCount = 0;
+
 	TArray<AActor*> FoundVolumes;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASTSpawnVolume::StaticClass(), FoundVolumes);
 
@@ -73,7 +88,7 @@ void ASTGameState::StartLevel()
 		return;
 	}
 
-	for (int32 i = 0; i < TotalCoinSpawnCount; ++i)
+	for (int32 i = 0; i < CurrentWaveData.TotalItemSpawnCount; ++i)
 	{
 		const int32 RandomVolumeIndex = FMath::RandRange(0, FoundVolumes.Num() - 1);
 		if (ASTSpawnVolume* SpawnVolume = Cast<ASTSpawnVolume>(FoundVolumes[RandomVolumeIndex]))
@@ -85,60 +100,49 @@ void ASTGameState::StartLevel()
 			}
 		}
 	}
-	GetWorldTimerManager().SetTimer(LevelTimerHandle, this, &ASTGameState::OnLevelTimeUp, LevelDuration, false);
+	GetWorldTimerManager().SetTimer(WaveTimerHandle, this, &ASTGameState::OnWaveTimeUp,
+	                                CurrentWaveData.WaveDuration, false);
 	UpdateHUD();
-	UE_LOG(LogTemp, Warning, TEXT("레벨 %d 시작! 스폰된 코인: %d개"), CurrentLevelIndex + 1, SpawnedCoinCount);
+	UE_LOG(LogTemp, Warning, TEXT("Wave %d 시작 스폰된 코인: %d개"), CurrentWaveIndex + 1, SpawnedCoinCount);
 }
 
-void ASTGameState::OnLevelTimeUp()
+void ASTGameState::OnWaveTimeUp()
 {
-	EndLevel();
+	EndWave(true);
 }
 
 void ASTGameState::OnCoinCollected()
 {
 	CollectedCoinCount++;
+	UpdateHUD();
 	UE_LOG(LogTemp, Warning, TEXT("코인 획득: %d / %d"), CollectedCoinCount, SpawnedCoinCount);
 	if (SpawnedCoinCount > 0 && CollectedCoinCount >= SpawnedCoinCount)
 	{
-		EndLevel();
+		EndWave(false);
 	}
 }
 
-void ASTGameState::EndLevel()
+void ASTGameState::EndWave(bool bIsTimeUp)
 {
-	GetWorldTimerManager().ClearTimer(LevelTimerHandle);
+	GetWorldTimerManager().ClearTimer(WaveTimerHandle);
 
-	if (GameInstance)
+	if (bIsTimeUp)
 	{
-		AddScore(Score);
-		CurrentLevelIndex++;
-		GameInstance->SetCurrentLevelIndex(CurrentLevelIndex);
-	}
-
-	if (CurrentLevelIndex >= MaxLevels)
-	{
-		OnGameOver();
-		return;
-	}
-
-	if (LevelMapNames.IsValidIndex(CurrentLevelIndex))
-	{
-		UGameplayStatics::OpenLevel(GetWorld(), LevelMapNames[CurrentLevelIndex]);
+		UE_LOG(LogTemp, Warning, TEXT("시간 초과 Wave %d 실패."), CurrentWaveIndex + 1);
 	}
 	else
 	{
-		OnGameOver();
+		UE_LOG(LogTemp, Warning, TEXT("Wave %d 성공!"), CurrentWaveIndex + 1);
 	}
+
+	CurrentWaveIndex++;
+	StartWave();
 }
 
 void ASTGameState::UpdateHUD()
 {
 	ASTPlayerController* STPlayerController = Cast<ASTPlayerController>(GetWorld()->GetFirstPlayerController());
-	if (!STPlayerController)
-	{
-		return;
-	}
+	ensure(STPlayerController);
 
 	UUserWidget* HUDWidget = STPlayerController->GetHUDWidget();
 	if (!HUDWidget)
@@ -148,7 +152,7 @@ void ASTGameState::UpdateHUD()
 
 	if (UTextBlock* TimeText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("Time"))))
 	{
-		float RemainingTime = GetWorldTimerManager().GetTimerRemaining(LevelTimerHandle);
+		float RemainingTime = GetWorldTimerManager().GetTimerRemaining(WaveTimerHandle);
 		if (RemainingTime == -1.0f)
 		{
 			TimeText->SetText(FText::FromString(FString::Printf(TEXT("종료"))));
@@ -167,15 +171,15 @@ void ASTGameState::UpdateHUD()
 		}
 	}
 
-	if (UTextBlock* LevelIndexText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("Level"))))
+	if (UTextBlock* WaveIndexText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("Wave"))))
 	{
-		if (CurrentLevelIndex >= MaxLevels)
+		if (WaveSettings.IsValidIndex(CurrentWaveIndex))
 		{
-			LevelIndexText->SetText(FText::FromString(FString::Printf(TEXT(""))));
+			WaveIndexText->SetText(FText::FromString(FString::Printf(TEXT("Wave: %d"), CurrentWaveIndex + 1)));
 		}
 		else
 		{
-			LevelIndexText->SetText(FText::FromString(FString::Printf(TEXT("Level: %d"), CurrentLevelIndex + 1)));
+			WaveIndexText->SetText(FText::FromString(FString::Printf(TEXT(""))));
 		}
 	}
 
