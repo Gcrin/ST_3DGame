@@ -36,14 +36,27 @@ void ASTSpawnVolume::BeginPlay()
 
 FVector ASTSpawnVolume::GetRandomPointInVolume() const
 {
+	constexpr int32 MaxLoop = 10;
+	
 	FVector BoxExtent = SpawningBox->GetScaledBoxExtent();
 	FVector BoxOrigin = SpawningBox->GetComponentLocation();
 
-	return BoxOrigin + FVector(
-		FMath::FRandRange(-BoxExtent.X, BoxExtent.X),
-		FMath::FRandRange(-BoxExtent.Y, BoxExtent.Y),
-		FMath::FRandRange(-BoxExtent.Z, BoxExtent.Z)
-	);
+	for (int32 Loop = 0; Loop < MaxLoop; ++Loop)
+	{
+		FVector StartPoint = BoxOrigin + FVector(
+			FMath::FRandRange(-BoxExtent.X, BoxExtent.X),
+			FMath::FRandRange(-BoxExtent.Y, BoxExtent.Y),
+			BoxExtent.Z
+		);
+
+		FHitResult HitResult;
+		FVector EndPoint = StartPoint - FVector(0, 0, BoxExtent.Z * 2);
+		if (GetWorld()->LineTraceSingleByChannel(HitResult, StartPoint, EndPoint, ECC_WorldStatic))
+		{
+			return HitResult.Location;
+		}
+	}
+	return BoxOrigin;
 }
 
 const FSTItemSpawnRow* ASTSpawnVolume::GetRandomItem() const
@@ -54,12 +67,12 @@ const FSTItemSpawnRow* ASTSpawnVolume::GetRandomItem() const
 		return nullptr;
 	}
 
-	const float RandValue = FMath::FRand() * TotalChance; 
+	const float RandValue = FMath::FRand() * TotalChance;
 
 	// 이진 탐색(UpperBound)을 사용하여 효율적으로 아이템 검색
 	// RandValue보다 큰 첫 번째 누적 확률 값의 인덱스를 찾습니다.
 	const int32 SelectedIndex = Algo::UpperBound(CumulativeChances, RandValue);
-    
+
 	// 해당 인덱스가 유효한지 확인
 	if (SpawnableItems.IsValidIndex(SelectedIndex))
 	{
