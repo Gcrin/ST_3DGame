@@ -54,7 +54,7 @@ const FSTItemSpawnRow* ASTSpawnVolume::GetRandomItem() const
 		return nullptr;
 	}
 
-	const float RandValue = FMath::FRandRange(0.0f, TotalChance);
+	const float RandValue = FMath::FRand() * TotalChance; 
 
 	// 이진 탐색(UpperBound)을 사용하여 효율적으로 아이템 검색
 	// RandValue보다 큰 첫 번째 누적 확률 값의 인덱스를 찾습니다.
