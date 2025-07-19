@@ -90,6 +90,65 @@ void ASTCharacter::UpdateOverheadWidget()
 	}
 }
 
+void ASTCharacter::ApplySlowingEffect(float Duration, float SpeedMultiplier)
+{
+	bIsSlowed = true;
+	SlowingMultiplier = SpeedMultiplier;
+	UpdateCharacterSpeed();
+
+	GetWorldTimerManager().ClearTimer(SlowingTimerHandle);
+	GetWorldTimerManager().SetTimer(SlowingTimerHandle, this, &ASTCharacter::ClearSlowingEffect, Duration, false);
+
+	UE_LOG(LogTemp, Warning, TEXT("슬로우 디버프 효과 %f초 적용"), Duration);
+}
+
+void ASTCharacter::ApplyBlindEffect(float Duration)
+{
+	bIsBlinded = true;
+	OnBlindStateChanged.Broadcast(bIsBlinded);
+
+	GetWorldTimerManager().ClearTimer(BlindTimerHandle);
+	GetWorldTimerManager().SetTimer(BlindTimerHandle, this, &ASTCharacter::ClearBlindEffect, Duration, false);
+
+	UE_LOG(LogTemp, Warning, TEXT("실명 디버프 효과 %f초 적용"), Duration);
+}
+
+void ASTCharacter::ClearSlowingEffect()
+{
+	bIsSlowed = false;
+	SlowingMultiplier = 1.0f;
+	UpdateCharacterSpeed();
+	UE_LOG(LogTemp, Warning, TEXT("슬로우 디버프 효과 제거"));
+}
+
+void ASTCharacter::ClearBlindEffect()
+{
+	bIsBlinded = false;
+	OnBlindStateChanged.Broadcast(bIsBlinded);
+	
+	UE_LOG(LogTemp, Warning, TEXT("실명 디버프 효과 제거"));
+}
+
+void ASTCharacter::UpdateCharacterSpeed()
+{
+	float TargetSpeed = NormalSpeed;
+
+	if (bIsSlowed)
+	{
+		TargetSpeed *= SlowingMultiplier;
+	}
+
+	if (bIsSprinting)
+	{
+		TargetSpeed *= SprintSpeedMultiplier;
+	}
+
+	if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+	{
+		MoveComp->MaxWalkSpeed = TargetSpeed;
+	}
+}
+
 void ASTCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -172,16 +231,12 @@ void ASTCharacter::Look(const FInputActionValue& Value)
 
 void ASTCharacter::StartSprint(const FInputActionValue& Value)
 {
-	if (GetCharacterMovement())
-	{
-		GetCharacterMovement()->MaxWalkSpeed = NormalSpeed * SprintSpeedMultiplier;
-	}
+	bIsSprinting = true;
+	UpdateCharacterSpeed();
 }
 
 void ASTCharacter::StopSprint(const FInputActionValue& Value)
 {
-	if (GetCharacterMovement())
-	{
-		GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
-	}
+	bIsSprinting = false;
+	UpdateCharacterSpeed();
 }

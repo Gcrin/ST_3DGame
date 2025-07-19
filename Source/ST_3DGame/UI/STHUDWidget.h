@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "STHUDWidget.generated.h"
 
+class UImage;
 class UProgressBar;
 class UTextBlock;
 /**
@@ -23,15 +24,14 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> ScoreText;
-
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> WaveText;
-
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> TimeText;
-
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UProgressBar> HealthBar;
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UImage> BlindImg;
 
 private:
 	UFUNCTION()
@@ -40,6 +40,8 @@ private:
 	void UpdateWave(int32 NewWave);
 	UFUNCTION()
 	void UpdateHealth(float CurrentHealth, float MaxHealth);
+	UFUNCTION()
+	void UpdateBlindState(bool bIsBlinded);
 
 	UPROPERTY()
 	TWeakObjectPtr<class ASTCharacter> OwningCharacter;

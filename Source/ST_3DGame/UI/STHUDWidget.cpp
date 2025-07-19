@@ -2,8 +2,9 @@
 
 
 #include "STHUDWidget.h"
-#include "Components/TextBlock.h"
+#include "Components/Image.h"
 #include "Components/ProgressBar.h"
+#include "Components/TextBlock.h"
 #include "ST_3DGame/GameModes/STGameState.h"
 #include "ST_3DGame/Character/STCharacter.h"
 #include "TimerManager.h"
@@ -16,7 +17,7 @@ void USTHUDWidget::NativeConstruct()
 	{
 		STGameState->OnScoreChanged.AddDynamic(this, &USTHUDWidget::UpdateScore);
 		STGameState->OnWaveChanged.AddDynamic(this, &USTHUDWidget::UpdateWave);
-		
+
 		UpdateScore(STGameState->GetScore());
 		UpdateWave(STGameState->GetCurrentWaveIndex() + 1);
 	}
@@ -27,8 +28,10 @@ void USTHUDWidget::NativeConstruct()
 			OwningCharacter = STCharacter;
 
 			STCharacter->OnHealthChanged.AddDynamic(this, &USTHUDWidget::UpdateHealth);
-
 			UpdateHealth(STCharacter->GetHealth(), STCharacter->GetMaxHealth());
+
+			STCharacter->OnBlindStateChanged.AddDynamic(this, &USTHUDWidget::UpdateBlindState);
+			UpdateBlindState(STCharacter->IsBlinded());
 		}
 	}
 }
@@ -76,5 +79,13 @@ void USTHUDWidget::UpdateHealth(float CurrentHealth, float MaxHealth)
 	if (HealthBar && MaxHealth > 0.0f)
 	{
 		HealthBar->SetPercent(CurrentHealth / MaxHealth);
+	}
+}
+
+void USTHUDWidget::UpdateBlindState(bool bIsBlinded)
+{
+	if (BlindImg)
+	{
+		BlindImg->SetVisibility(bIsBlinded ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
 	}
 }
