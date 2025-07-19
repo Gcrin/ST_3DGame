@@ -26,15 +26,15 @@ protected:
 
 	//폭발까지 걸리는 시간
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mine")
-	float ExplosionDelay;
+	float ExplosionDelay = 1.0f;
 	//폭발 범위 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mine")
-	float ExplosionRadius;
+	float ExplosionRadius = 200.0f;
 	//폭발 데미지
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Mine")
-	float ExplosionDamage;
+	float ExplosionDamage = 30.0f;
 
-	bool bHasExploded;
+	bool bHasExploded = false;
 	FTimerHandle ExplosionTimerHandle;
 
 	virtual void ActivateItem(AActor* Activator) override;

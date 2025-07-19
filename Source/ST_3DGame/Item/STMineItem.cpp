@@ -6,7 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
 
-ASTMineItem::ASTMineItem(): ExplosionDelay(5.0f), ExplosionRadius(300.0f), ExplosionDamage(30.0f), bHasExploded(false)
+ASTMineItem::ASTMineItem()
 {
 	ItemType = "Mine";
 
@@ -14,6 +14,8 @@ ASTMineItem::ASTMineItem(): ExplosionDelay(5.0f), ExplosionRadius(300.0f), Explo
 	ExplosionCollision->SetupAttachment(Scene);
 	ExplosionCollision->InitSphereRadius(ExplosionRadius);
 	ExplosionCollision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+
+	ParticleDuration = ExplosionDelay;
 }
 
 void ASTMineItem::ActivateItem(AActor* Activator)
@@ -26,6 +28,7 @@ void ASTMineItem::ActivateItem(AActor* Activator)
 
 	GetWorldTimerManager().SetTimer(ExplosionTimerHandle, this, &ASTMineItem::Explode, ExplosionDelay);
 	bHasExploded = true;
+	StaticMesh->AddLocalOffset(FVector(0.0f, 0.0f, -5.0f));
 }
 
 void ASTMineItem::Explode()
