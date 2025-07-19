@@ -22,6 +22,10 @@ struct FWaveData
 	float WaveDuration;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnScoreChanged, int32, NewScore);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnWaveChanged, int32, NewWave);
+
 UCLASS()
 class ST_3DGAME_API ASTGameState : public AGameState
 {
@@ -29,16 +33,17 @@ class ST_3DGAME_API ASTGameState : public AGameState
 
 public:
 	ASTGameState();
-	
+
 	UFUNCTION(BlueprintPure, Category="Score")
 	int32 GetScore() const;
 	UFUNCTION(BlueprintCallable, Category="Score")
 	void AddScore(int32 Amount);
+	UFUNCTION(BlueprintCallable, Category = "Wave")
+	int32 GetCurrentWaveIndex() const;
+	
 	// 게임이 완전히 끝났을 때 (모든 레벨 종료) 실행되는 함수
 	UFUNCTION(BlueprintCallable, Category = "Wave")
 	void OnGameOver();
-
-	void UpdateHUD();
 
 	// 코인을 주웠을 때 호출
 	void OnCoinCollected();
@@ -47,15 +52,24 @@ public:
 	// 레벨을 강제 종료하고 다음 레벨로 이동
 	void EndWave(bool bIsTimeUp);
 
+	UFUNCTION(BlueprintPure, Category = "Wave")
+	float GetWaveRemainingTime() const;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnScoreChanged OnScoreChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnWaveChanged OnWaveChanged;
+
 protected:
 	virtual void BeginPlay() override;
-	
+
 	// 레벨 제한 시간이 만료되었을 때 호출
 	void OnWaveTimeUp();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave", meta = (AllowPrivateAccess = "true"))
 	TArray<FWaveData> WaveSettings;
-	
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wave", meta = (AllowPrivateAccess = "true"))
 	int32 CurrentWaveIndex = 0;
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Score", meta = (AllowPrivateAccess = "true"))

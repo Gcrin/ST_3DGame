@@ -6,7 +6,6 @@
 #include "Blueprint/UserWidget.h"
 #include "Components/TextBlock.h"
 #include "Kismet/GameplayStatics.h"
-#include "ST_3DGame/GameModes/STGameState.h"
 #include "ST_3DGame/System/STGameInstance.h"
 
 ASTPlayerController::ASTPlayerController()
@@ -50,11 +49,6 @@ void ASTPlayerController::ShowGameHUD()
 
 			bShowMouseCursor = false;
 			SetInputMode(FInputModeGameOnly());
-
-			if (ASTGameState* ASTGameState = GetWorld() ? GetWorld()->GetGameState<class ASTGameState>() : nullptr)
-			{
-				ASTGameState->UpdateHUD();
-			}
 		}
 	}
 }

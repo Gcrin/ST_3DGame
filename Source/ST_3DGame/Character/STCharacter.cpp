@@ -44,6 +44,8 @@ void ASTCharacter::AddHealth(float Amount)
 {
 	Health = FMath::Clamp(Health + Amount, 0.0f, MaxHealth);
 	UpdateOverheadWidget();
+
+	OnHealthChanged.Broadcast(Health, MaxHealth);
 }
 
 void ASTCharacter::OnDeath()
@@ -57,15 +59,19 @@ void ASTCharacter::OnDeath()
 float ASTCharacter::TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
                                AActor* DamageCauser)
 {
-	Health = FMath::Clamp(Health - Damage, 0.0f, MaxHealth);
+	const float ActualDamage = Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	Health = FMath::Clamp(Health - ActualDamage, 0.0f, MaxHealth);
 	UE_LOG(LogTemp, Warning, TEXT("체력: %f"), Health);
 	UpdateOverheadWidget();
+
+	OnHealthChanged.Broadcast(Health, MaxHealth);
+
 	if (Health <= 0.0f)
 	{
 		OnDeath();
 	}
 
-	return Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+	return ActualDamage;
 }
 
 void ASTCharacter::UpdateOverheadWidget()

@@ -2,11 +2,7 @@
 
 
 #include "STGameState.h"
-#include "Blueprint/UserWidget.h"
-#include "Components/ProgressBar.h"
-#include "Components/TextBlock.h"
 #include "Kismet/GameplayStatics.h"
-#include "ST_3DGame/Character/STCharacter.h"
 #include "ST_3DGame/Character/STPlayerController.h"
 #include "ST_3DGame/Item/STCoinItem.h"
 #include "ST_3DGame/Item/STSpawnVolume.h"
@@ -17,7 +13,7 @@ ASTGameState::ASTGameState()
 	if (WaveSettings.Num() == 0)
 	{
 		WaveSettings.AddDefaulted();
-        
+
 		if (WaveSettings.IsValidIndex(0))
 		{
 			WaveSettings[0].TotalItemSpawnCount = 40;
@@ -30,17 +26,18 @@ void ASTGameState::BeginPlay()
 {
 	Super::BeginPlay();
 	GameInstance = Cast<USTGameInstance>(GetGameInstance());
-	UpdateHUD();
 
 	CurrentWaveIndex = 0;
 	StartWave();
-
-	GetWorldTimerManager().SetTimer(HUDUpdateTimerHandle, this, &ASTGameState::UpdateHUD, 0.1f, true);
 }
 
 int32 ASTGameState::GetScore() const
 {
-	return Score;
+	if (GameInstance)
+	{
+		return GameInstance->GetTotalScore();
+	}
+	return 0;
 }
 
 void ASTGameState::AddScore(int32 Amount)
@@ -48,7 +45,14 @@ void ASTGameState::AddScore(int32 Amount)
 	if (GameInstance)
 	{
 		GameInstance->AddToScore(Amount);
+
+		OnScoreChanged.Broadcast(GetScore());
 	}
+}
+
+int32 ASTGameState::GetCurrentWaveIndex() const
+{
+	return CurrentWaveIndex;
 }
 
 void ASTGameState::OnGameOver()
@@ -68,6 +72,7 @@ void ASTGameState::StartWave()
 		return;
 	}
 
+	OnWaveChanged.Broadcast(CurrentWaveIndex + 1);
 
 	const FWaveData& CurrentWaveData = WaveSettings[CurrentWaveIndex];
 
@@ -102,7 +107,6 @@ void ASTGameState::StartWave()
 	}
 	GetWorldTimerManager().SetTimer(WaveTimerHandle, this, &ASTGameState::OnWaveTimeUp,
 	                                CurrentWaveData.WaveDuration, false);
-	UpdateHUD();
 	UE_LOG(LogTemp, Warning, TEXT("Wave %d 시작 스폰된 코인: %d개"), CurrentWaveIndex + 1, SpawnedCoinCount);
 }
 
@@ -114,7 +118,6 @@ void ASTGameState::OnWaveTimeUp()
 void ASTGameState::OnCoinCollected()
 {
 	CollectedCoinCount++;
-	UpdateHUD();
 	UE_LOG(LogTemp, Warning, TEXT("코인 획득: %d / %d"), CollectedCoinCount, SpawnedCoinCount);
 	if (SpawnedCoinCount > 0 && CollectedCoinCount >= SpawnedCoinCount)
 	{
@@ -139,55 +142,7 @@ void ASTGameState::EndWave(bool bIsTimeUp)
 	StartWave();
 }
 
-void ASTGameState::UpdateHUD()
+float ASTGameState::GetWaveRemainingTime() const
 {
-	ASTPlayerController* STPlayerController = Cast<ASTPlayerController>(GetWorld()->GetFirstPlayerController());
-	ensure(STPlayerController);
-
-	UUserWidget* HUDWidget = STPlayerController->GetHUDWidget();
-	if (!HUDWidget)
-	{
-		return;
-	}
-
-	if (UTextBlock* TimeText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("Time"))))
-	{
-		float RemainingTime = GetWorldTimerManager().GetTimerRemaining(WaveTimerHandle);
-		if (RemainingTime == -1.0f)
-		{
-			TimeText->SetText(FText::FromString(FString::Printf(TEXT("종료"))));
-		}
-		else
-		{
-			TimeText->SetText(FText::FromString(FString::Printf(TEXT("Time: %.1f"), RemainingTime)));
-		}
-	}
-
-	if (UTextBlock* ScoreText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("Score"))))
-	{
-		if (GameInstance)
-		{
-			ScoreText->SetText(FText::FromString(FString::Printf(TEXT("Score: %d"), GameInstance->GetTotalScore())));
-		}
-	}
-
-	if (UTextBlock* WaveIndexText = Cast<UTextBlock>(HUDWidget->GetWidgetFromName(TEXT("Wave"))))
-	{
-		if (WaveSettings.IsValidIndex(CurrentWaveIndex))
-		{
-			WaveIndexText->SetText(FText::FromString(FString::Printf(TEXT("Wave: %d"), CurrentWaveIndex + 1)));
-		}
-		else
-		{
-			WaveIndexText->SetText(FText::FromString(FString::Printf(TEXT(""))));
-		}
-	}
-
-	if (UProgressBar* HealthBar = Cast<UProgressBar>(HUDWidget->GetWidgetFromName(TEXT("HealthBar"))))
-	{
-		if (ASTCharacter* PlayerCharacter = Cast<ASTCharacter>(STPlayerController->GetPawn()))
-		{
-			HealthBar->SetPercent(static_cast<float>(PlayerCharacter->GetHealth()) / PlayerCharacter->GetMaxHealth());
-		}
-	}
+	return GetWorldTimerManager().GetTimerRemaining(WaveTimerHandle);
 }

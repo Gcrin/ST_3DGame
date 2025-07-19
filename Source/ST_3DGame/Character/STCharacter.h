@@ -12,6 +12,8 @@ class UCameraComponent;
 
 struct FInputActionValue;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, CurrentHealth, float, MaxHealth);
+
 UCLASS()
 class ST_3DGAME_API ASTCharacter : public ACharacter
 {
@@ -19,6 +21,9 @@ class ST_3DGAME_API ASTCharacter : public ACharacter
 
 public:
 	ASTCharacter();
+
+	UPROPERTY(BlueprintAssignable, Category = "Events")
+	FOnHealthChanged OnHealthChanged;
 
 	UFUNCTION(BlueprintPure, Category = "Health")
 	int32 GetHealth() const;
@@ -33,6 +38,7 @@ public:
 	virtual float TakeDamage(float Damage, const FDamageEvent& DamageEvent, AController* EventInstigator,
 	                         AActor* DamageCauser) override;
 	void UpdateOverheadWidget();
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
