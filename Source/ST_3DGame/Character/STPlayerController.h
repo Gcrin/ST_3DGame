@@ -32,6 +32,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
 	TObjectPtr<UInputAction> SprintAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Input")
+	TObjectPtr<UInputAction> InteractAction;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "HUD")
 	TSubclassOf<UUserWidget> HUDWidgetClass;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HUD")

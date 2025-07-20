@@ -11,10 +11,11 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "ST_3DGame/GameModes/STGameState.h"
+#include "ST_3DGame/Interaction/STInteractionInterface.h"
 
 ASTCharacter::ASTCharacter()
 {
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArmComponent->SetupAttachment(RootComponent);
 	SpringArmComponent->TargetArmLength = 300.0f;
@@ -84,7 +85,7 @@ void ASTCharacter::UpdateOverheadWidget()
 	{
 		return;
 	}
-	
+
 	if (UProgressBar* HealthBar = Cast<UProgressBar>(OverheadWidgetInstance->GetWidgetFromName(TEXT("HealthBar"))))
 	{
 		HealthBar->SetPercent(Health / MaxHealth);
@@ -114,6 +115,63 @@ void ASTCharacter::ApplyBlindEffect(float Duration)
 	UE_LOG(LogTemp, Warning, TEXT("실명 디버프 효과 %f초 적용"), Duration);
 }
 
+void ASTCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	CheckInteraction();
+}
+
+void ASTCharacter::CheckInteraction()
+{
+	FVector Start = CameraComponent->GetComponentLocation();
+	FVector End = Start + CameraComponent->GetForwardVector() * InteractDistance; // 5미터 앞까지 체크
+	FHitResult HitResult;
+
+	if (GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility))
+	{
+		TScriptInterface<ISTInteractionInterface> NewInteractable = HitResult.GetActor();
+
+		if (NewInteractable) // 인터페이스를 가진 액터를 바라봤다면
+		{
+			if (NewInteractable != FocusedInteractable)
+			{
+				// 이전에 보던 게 있다면 숨김 처리
+				if (FocusedInteractable)
+				{
+					FocusedInteractable->Execute_HideInteractionPrompt(FocusedInteractable.GetObject());
+				}
+				// 새로 보는 것에게 UI를 보여달라고 요청
+				NewInteractable->Execute_ShowInteractionPrompt(NewInteractable.GetObject());
+				FocusedInteractable = NewInteractable;
+			}
+		}
+		else // 인터페이스가 없는 액터를 바라봤다면
+		{
+			if (FocusedInteractable)
+			{
+				FocusedInteractable->Execute_HideInteractionPrompt(FocusedInteractable.GetObject());
+				FocusedInteractable = nullptr;
+			}
+		}
+	}
+	else // 아무것도 안 맞았다면
+	{
+		if (FocusedInteractable)
+		{
+			FocusedInteractable->Execute_HideInteractionPrompt(FocusedInteractable.GetObject());
+			FocusedInteractable = nullptr;
+		}
+	}
+}
+
+void ASTCharacter::OnInteract()
+{
+	if (FocusedInteractable)
+	{
+		FocusedInteractable->Execute_Interact(FocusedInteractable.GetObject(), this);
+	}
+}
+
 void ASTCharacter::ClearSlowingEffect()
 {
 	bIsSlowed = false;
@@ -126,7 +184,7 @@ void ASTCharacter::ClearBlindEffect()
 {
 	bIsBlinded = false;
 	OnBlindStateChanged.Broadcast(bIsBlinded);
-	
+
 	UE_LOG(LogTemp, Warning, TEXT("실명 디버프 효과 제거"));
 }
 
@@ -178,6 +236,8 @@ void ASTCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 	BindAction(PlayerController->SprintAction, ETriggerEvent::Triggered, &ASTCharacter::StartSprint);
 	BindAction(PlayerController->SprintAction, ETriggerEvent::Completed, &ASTCharacter::StopSprint);
+
+	BindAction(PlayerController->InteractAction, ETriggerEvent::Started, &ASTCharacter::OnInteract);
 }
 
 void ASTCharacter::BeginPlay()

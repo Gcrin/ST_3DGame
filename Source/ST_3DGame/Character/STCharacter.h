@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "STCharacter.generated.h"
 
+class ISTInteractionInterface;
 class UWidgetComponent;
 class USpringArmComponent;
 class UCameraComponent;
@@ -47,6 +48,11 @@ public:
 	void ApplyBlindEffect(float Duration);
 
 protected:
+	virtual void Tick(float DeltaSeconds) override;
+
+	void CheckInteraction();
+	void OnInteract();
+	
 	void ClearSlowingEffect();
 	void ClearBlindEffect();
 	void UpdateCharacterSpeed();
@@ -90,4 +96,8 @@ private:
 	bool bIsSlowed = false;
 	bool bIsBlinded = false;
 	float SlowingMultiplier = 1.0f;
+
+	float InteractDistance = 500.0f;
+	UPROPERTY()
+	TScriptInterface<ISTInteractionInterface> FocusedInteractable; // 현재 바라보고 있는 상호작용 객체
 };
