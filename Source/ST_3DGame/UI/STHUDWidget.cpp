@@ -93,6 +93,10 @@ void USTHUDWidget::UpdateHealth(float CurrentHealth, float MaxHealth)
 	if (HealthBar && MaxHealth > 0.0f)
 	{
 		HealthBar->SetPercent(CurrentHealth / MaxHealth);
+		if (HealthText)
+		{
+			HealthText->SetText(FText::FromString(FString::Printf(TEXT("%.0f / %.0f"), CurrentHealth, MaxHealth)));
+		}
 	}
 }
 

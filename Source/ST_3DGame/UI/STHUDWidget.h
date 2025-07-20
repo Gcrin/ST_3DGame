@@ -31,6 +31,8 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UProgressBar> HealthBar;
 	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UTextBlock> HealthText;
+	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> BlindImg;
 
 	UPROPERTY(EditAnywhere, Category = "Announcement")
