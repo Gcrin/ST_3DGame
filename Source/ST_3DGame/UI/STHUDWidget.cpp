@@ -72,6 +72,20 @@ void USTHUDWidget::UpdateWave(int32 NewWave)
 	{
 		WaveText->SetText(FText::FromString(FString::Printf(TEXT("Wave %d"), NewWave)));
 	}
+
+	if (WaveAnnouncementWidgetClass)
+	{
+		if (UUserWidget* AnnouncementWidget = CreateWidget(this, WaveAnnouncementWidgetClass))
+		{
+			if (UTextBlock* AnnouncementTextBlock = Cast<UTextBlock>(
+				AnnouncementWidget->GetWidgetFromName(TEXT("AnnouncementText"))))
+			{
+				AnnouncementTextBlock->SetText(FText::FromString(FString::Printf(TEXT("Wave %d 시작"), NewWave)));
+			}
+
+			AnnouncementWidget->AddToViewport();
+		}
+	}
 }
 
 void USTHUDWidget::UpdateHealth(float CurrentHealth, float MaxHealth)

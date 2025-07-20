@@ -33,6 +33,9 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UImage> BlindImg;
 
+	UPROPERTY(EditAnywhere, Category = "Announcement")
+	TSubclassOf<UUserWidget> WaveAnnouncementWidgetClass;
+
 private:
 	UFUNCTION()
 	void UpdateScore(int32 NewScore);
