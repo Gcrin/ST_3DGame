@@ -85,7 +85,7 @@ void ASTPlayerController::ShowMainMenu(bool bIsRestart)
 	{
 		if (bIsRestart)
 		{
-			ButtonText->SetText(FText::FromString(TEXT("Restart")));
+			ButtonText->SetText(FText::FromString(TEXT("재시작")));
 
 			if (UFunction* PlayAnimFunc = MainMenuWidgetInstance->FindFunction(FName("PlayGameOverAnim")))
 			{
@@ -104,7 +104,7 @@ void ASTPlayerController::ShowMainMenu(bool bIsRestart)
 		}
 		else
 		{
-			ButtonText->SetText(FText::FromString(TEXT("Start")));
+			ButtonText->SetText(FText::FromString(TEXT("시작")));
 		}
 	}
 }
