@@ -59,6 +59,11 @@ void ASTCharacter::ApplyDebuff(EDebuffType Type, float Duration)
 	OnActiveDebuffsChanged.Broadcast(ActiveDebuffs);
 }
 
+void ASTCharacter::SetIsControlsReversed(bool bNewState)
+{
+	bIsControlsReversed = bNewState;
+}
+
 void ASTCharacter::SetIsSlowed(bool bNewState, float Multiplier)
 {
 	bIsSlowed = bNewState;
@@ -274,7 +279,12 @@ void ASTCharacter::Move(const FInputActionValue& Value)
 {
 	if (!Controller) return;
 
-	const FVector2D MoveInput = Value.Get<FVector2D>();
+	FVector2D MoveInput = Value.Get<FVector2D>();
+
+	if (bIsControlsReversed)
+	{
+		MoveInput *= -1.0f;
+	}
 
 	if (!FMath::IsNearlyZero(MoveInput.X))
 	{

@@ -46,6 +46,7 @@ public:
 
 	void ApplyDebuff(EDebuffType Type, float Duration);
 
+	void SetIsControlsReversed(bool bNewState);
 	void SetIsSlowed(bool bNewState, float Multiplier);
 	void SetIsBlinded(bool bNewState);
 	void UpdateCharacterSpeed();
@@ -109,7 +110,8 @@ private:
 	
 	UPROPERTY()
 	TArray<FActiveDebuff> ActiveDebuffs;
-	
+
+	bool bIsControlsReversed = false;
 	bool bIsSprinting = false;
 	bool bIsSlowed = false;
 	bool bIsBlinded = false;
