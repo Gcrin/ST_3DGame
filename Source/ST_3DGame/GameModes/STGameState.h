@@ -6,6 +6,8 @@
 #include "GameFramework/GameState.h"
 #include "STGameState.generated.h"
 
+enum class EDebuffType : uint8;
+struct FDebuffInfo;
 class USTGameInstance;
 
 USTRUCT(BlueprintType)
@@ -34,6 +36,7 @@ class ST_3DGAME_API ASTGameState : public AGameState
 public:
 	ASTGameState();
 
+	const FDebuffInfo* GetDebuffInfo(EDebuffType Type) const;
 	UFUNCTION(BlueprintPure, Category="Score")
 	int32 GetScore() const;
 	UFUNCTION(BlueprintCallable, Category="Score")
@@ -81,6 +84,8 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Coin", meta = (AllowPrivateAccess = "true"))
 	int32 CollectedCoinCount = 0;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Data")
+	TObjectPtr<UDataTable> DebuffInfoTable;
 private:
 	UPROPERTY(Transient)
 	TObjectPtr<USTGameInstance> GameInstance;

@@ -2,12 +2,26 @@
 
 
 #include "STHUDWidget.h"
+
+#include "STDebuffIconWidget.h"
 #include "Components/Image.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
+#include "Components/HorizontalBox.h"
 #include "ST_3DGame/GameModes/STGameState.h"
 #include "ST_3DGame/Character/STCharacter.h"
 #include "TimerManager.h"
+#include "Components/NamedSlot.h"
+
+void USTHUDWidget::AddGameScreenEffect(UUserWidget* EffectWidget)
+{
+	check(GameScreenEffectsSlot != nullptr);
+	
+	if (EffectWidget)
+	{
+		GameScreenEffectsSlot->AddChild(EffectWidget);
+	}
+}
 
 void USTHUDWidget::NativeConstruct()
 {
@@ -25,13 +39,10 @@ void USTHUDWidget::NativeConstruct()
 	{
 		if (ASTCharacter* STCharacter = Cast<ASTCharacter>(PlayerPawn))
 		{
-			OwningCharacter = STCharacter;
-
 			STCharacter->OnHealthChanged.AddDynamic(this, &USTHUDWidget::UpdateHealth);
 			UpdateHealth(STCharacter->GetHealth(), STCharacter->GetMaxHealth());
 
-			STCharacter->OnBlindStateChanged.AddDynamic(this, &USTHUDWidget::UpdateBlindState);
-			UpdateBlindState(STCharacter->IsBlinded());
+			STCharacter->OnActiveDebuffsChanged.AddDynamic(this, &USTHUDWidget::UpdateDebuffIcons);
 		}
 	}
 }
@@ -100,10 +111,25 @@ void USTHUDWidget::UpdateHealth(float CurrentHealth, float MaxHealth)
 	}
 }
 
-void USTHUDWidget::UpdateBlindState(bool bIsBlinded)
+void USTHUDWidget::UpdateDebuffIcons(const TArray<FActiveDebuff>& ActiveDebuffs)
 {
-	if (BlindImg)
+	if (!DebuffBox || !DebuffIconWidgetClass) return;
+
+	DebuffBox->ClearChildren();
+
+	ASTGameState* STGameState = GetWorld()->GetGameState<ASTGameState>();
+	if (!STGameState) return;
+
+	for (const FActiveDebuff& Debuff : ActiveDebuffs)
 	{
-		BlindImg->SetVisibility(bIsBlinded ? ESlateVisibility::Visible : ESlateVisibility::Hidden);
+		if (const FDebuffInfo* StaticInfo = STGameState->GetDebuffInfo(Debuff.Type))
+		{
+			if (USTDebuffIconWidget* IconWidget = CreateWidget<USTDebuffIconWidget>(this, DebuffIconWidgetClass))
+			{
+				// 아이콘 위젯에 필요한 모든 정보를 전달
+				IconWidget->InitializeIcon(Debuff, StaticInfo);
+				DebuffBox->AddChildToHorizontalBox(IconWidget);
+			}
+		}
 	}
 }

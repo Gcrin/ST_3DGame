@@ -7,6 +7,7 @@
 #include "ST_3DGame/Item/STCoinItem.h"
 #include "ST_3DGame/Item/STSpawnVolume.h"
 #include "ST_3DGame/System/STGameInstance.h"
+#include "ST_3DGame/Debuffs/DebuffType.h"
 
 ASTGameState::ASTGameState()
 {
@@ -20,6 +21,21 @@ ASTGameState::ASTGameState()
 			WaveSettings[0].WaveDuration = 30.f;
 		}
 	}
+}
+
+const FDebuffInfo* ASTGameState::GetDebuffInfo(EDebuffType Type) const
+{
+	if (!DebuffInfoTable) return nullptr;
+
+	const FString EnumFullName  = UEnum::GetValueAsString(Type);
+
+	// "::"를 기준으로 문자열을 분리하여, 마지막 부분만 가져옵니다.
+	FString EnumValueName;
+	EnumFullName.Split(TEXT("::"), nullptr, &EnumValueName, ESearchCase::CaseSensitive, ESearchDir::FromEnd);
+	
+	const FName RowName = FName(*EnumValueName);
+
+	return DebuffInfoTable->FindRow<FDebuffInfo>(RowName, TEXT(""));
 }
 
 void ASTGameState::BeginPlay()

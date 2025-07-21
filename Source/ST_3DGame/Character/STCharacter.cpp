@@ -10,6 +10,7 @@
 #include "Components/WidgetComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "ST_3DGame/Debuffs/STDebuffEffectBase.h"
 #include "ST_3DGame/GameModes/STGameState.h"
 #include "ST_3DGame/Interaction/STInteractionInterface.h"
 
@@ -30,6 +31,57 @@ ASTCharacter::ASTCharacter()
 	OverheadWidget->SetWidgetSpace(EWidgetSpace::Screen);
 
 	Health = MaxHealth;
+}
+
+void ASTCharacter::ApplyDebuff(EDebuffType Type, float Duration)
+{
+	if (Type == EDebuffType::None) return;
+	ASTGameState* STGameState = GetWorld()->GetGameState<ASTGameState>();
+	if (!STGameState) return;
+
+	const FDebuffInfo* DebuffInfo = STGameState->GetDebuffInfo(Type);
+	if (!DebuffInfo || !DebuffInfo->EffectClass) return;
+	
+	TSubclassOf<USTDebuffEffectBase> EffectClass = DebuffInfo->EffectClass;
+	
+	RemoveDebuff(Type); // 중첩 방지
+
+	FActiveDebuff NewDebuff;
+	NewDebuff.Type = Type;
+	NewDebuff.EffectInstance = NewObject<USTDebuffEffectBase>(this, EffectClass);
+	NewDebuff.EffectInstance->OnApply(this);
+
+	FTimerDelegate TimerDelegate;
+	TimerDelegate.BindUFunction(this, FName("RemoveDebuff"), Type);
+	GetWorldTimerManager().SetTimer(NewDebuff.TimerHandle, TimerDelegate, Duration, false);
+
+	ActiveDebuffs.Add(NewDebuff);
+	OnActiveDebuffsChanged.Broadcast(ActiveDebuffs);
+}
+
+void ASTCharacter::SetIsSlowed(bool bNewState, float Multiplier)
+{
+	bIsSlowed = bNewState;
+	SlowingMultiplier = Multiplier;
+}
+
+void ASTCharacter::SetIsBlinded(bool bNewState)
+{
+	bIsBlinded = bNewState;
+}
+
+void ASTCharacter::RemoveDebuff(EDebuffType Type)
+{
+	int32 IndexToRemove = ActiveDebuffs.IndexOfByPredicate(
+		[&](const FActiveDebuff& Debuff){ return Debuff.Type == Type; });
+
+	if (IndexToRemove != INDEX_NONE)
+	{
+		ActiveDebuffs[IndexToRemove].EffectInstance->OnRemove(this);
+		GetWorldTimerManager().ClearTimer(ActiveDebuffs[IndexToRemove].TimerHandle);
+		ActiveDebuffs.RemoveAt(IndexToRemove);
+		OnActiveDebuffsChanged.Broadcast(ActiveDebuffs); // UI에 변경 알림
+	}
 }
 
 int32 ASTCharacter::GetHealth() const
@@ -92,33 +144,18 @@ void ASTCharacter::UpdateOverheadWidget()
 	}
 }
 
-void ASTCharacter::ApplySlowingEffect(float Duration, float SpeedMultiplier)
-{
-	bIsSlowed = true;
-	SlowingMultiplier = SpeedMultiplier;
-	UpdateCharacterSpeed();
-
-	GetWorldTimerManager().ClearTimer(SlowingTimerHandle);
-	GetWorldTimerManager().SetTimer(SlowingTimerHandle, this, &ASTCharacter::ClearSlowingEffect, Duration, false);
-
-	UE_LOG(LogTemp, Warning, TEXT("슬로우 디버프 효과 %f초 적용"), Duration);
-}
-
-void ASTCharacter::ApplyBlindEffect(float Duration)
-{
-	bIsBlinded = true;
-	OnBlindStateChanged.Broadcast(bIsBlinded);
-
-	GetWorldTimerManager().ClearTimer(BlindTimerHandle);
-	GetWorldTimerManager().SetTimer(BlindTimerHandle, this, &ASTCharacter::ClearBlindEffect, Duration, false);
-
-	UE_LOG(LogTemp, Warning, TEXT("실명 디버프 효과 %f초 적용"), Duration);
-}
-
 void ASTCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	CheckInteraction();
+
+	for (const FActiveDebuff& Debuff : ActiveDebuffs)
+	{
+		if (Debuff.EffectInstance)
+		{
+			Debuff.EffectInstance->OnTick(this, DeltaSeconds);
+		}
+	}
 }
 
 void ASTCharacter::CheckInteraction()
@@ -170,22 +207,6 @@ void ASTCharacter::OnInteract()
 	{
 		FocusedInteractable->Execute_Interact(FocusedInteractable.GetObject(), this);
 	}
-}
-
-void ASTCharacter::ClearSlowingEffect()
-{
-	bIsSlowed = false;
-	SlowingMultiplier = 1.0f;
-	UpdateCharacterSpeed();
-	UE_LOG(LogTemp, Warning, TEXT("슬로우 디버프 효과 제거"));
-}
-
-void ASTCharacter::ClearBlindEffect()
-{
-	bIsBlinded = false;
-	OnBlindStateChanged.Broadcast(bIsBlinded);
-
-	UE_LOG(LogTemp, Warning, TEXT("실명 디버프 효과 제거"));
 }
 
 void ASTCharacter::UpdateCharacterSpeed()
