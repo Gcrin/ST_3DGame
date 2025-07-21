@@ -7,6 +7,7 @@
 #include "ST_3DGame/Debuffs/DebuffType.h"
 #include "STCharacter.generated.h"
 
+class USphereComponent;
 class ISTInteractionInterface;
 class UWidgetComponent;
 class USpringArmComponent;
@@ -21,14 +22,15 @@ struct FActiveDebuff
 
 	UPROPERTY(BlueprintReadOnly)
 	EDebuffType Type;
-	
+
 	FTimerHandle TimerHandle;
-	
+
 	UPROPERTY()
 	TObjectPtr<USTDebuffEffectBase> EffectInstance;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, CurrentHealth, float, MaxHealth);
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActiveDebuffsChanged, const TArray<FActiveDebuff>&, ActiveDebuffs);
 
 UCLASS()
@@ -51,6 +53,9 @@ public:
 	void SetIsBlinded(bool bNewState);
 	void UpdateCharacterSpeed();
 
+	UFUNCTION(BlueprintPure, Category = "Components")
+	USphereComponent* GetMagnetFieldComponent() const { return MagnetFieldComponent; }
+
 	UFUNCTION(BlueprintPure, Category = "Health")
 	int32 GetHealth() const;
 	UFUNCTION(BlueprintPure, Category = "Health")
@@ -70,7 +75,7 @@ protected:
 
 	UFUNCTION()
 	void RemoveDebuff(EDebuffType Type);
-	
+
 	void CheckInteraction();
 	void OnInteract();
 
@@ -78,6 +83,8 @@ protected:
 	TObjectPtr<USpringArmComponent> SpringArmComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	TObjectPtr<UCameraComponent> CameraComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<USphereComponent> MagnetFieldComponent;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float NormalSpeed = 600.0f;
@@ -107,7 +114,6 @@ protected:
 	float Health;
 
 private:
-	
 	UPROPERTY()
 	TArray<FActiveDebuff> ActiveDebuffs;
 

@@ -13,7 +13,8 @@ enum class EDebuffType : uint8
 	Slowing			UMETA(DisplayName = "Slowing"),
 	Blind			UMETA(DisplayName = "Blind"),
 	ReverseControl	UMETA(DisplayName = "ReverseControl"),
-	Poison			UMETA(DisplayName = "Poison")
+	Poison			UMETA(DisplayName = "Poison"),
+	Magnetism		UMETA(DisplayName = "Magnetism")
 };
 
 USTRUCT(BlueprintType)

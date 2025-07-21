@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/ProgressBar.h"
+#include "Components/SphereComponent.h"
 #include "Components/TextBlock.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -26,6 +27,11 @@ ASTCharacter::ASTCharacter()
 	CameraComponent->SetupAttachment(SpringArmComponent, USpringArmComponent::SocketName);
 	CameraComponent->bUsePawnControlRotation = false;
 
+	MagnetFieldComponent = CreateDefaultSubobject<USphereComponent>(TEXT("MagnetFieldComponent"));
+	MagnetFieldComponent->SetupAttachment(RootComponent);
+	MagnetFieldComponent->SetSphereRadius(0.f);
+	MagnetFieldComponent->Deactivate();
+
 	OverheadWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("OverheadWidget"));
 	OverheadWidget->SetupAttachment(GetMesh());
 	OverheadWidget->SetWidgetSpace(EWidgetSpace::Screen);
@@ -41,9 +47,9 @@ void ASTCharacter::ApplyDebuff(EDebuffType Type, float Duration)
 
 	const FDebuffInfo* DebuffInfo = STGameState->GetDebuffInfo(Type);
 	if (!DebuffInfo || !DebuffInfo->EffectClass) return;
-	
+
 	TSubclassOf<USTDebuffEffectBase> EffectClass = DebuffInfo->EffectClass;
-	
+
 	RemoveDebuff(Type); // 중첩 방지
 
 	FActiveDebuff NewDebuff;
@@ -78,7 +84,7 @@ void ASTCharacter::SetIsBlinded(bool bNewState)
 void ASTCharacter::RemoveDebuff(EDebuffType Type)
 {
 	int32 IndexToRemove = ActiveDebuffs.IndexOfByPredicate(
-		[&](const FActiveDebuff& Debuff){ return Debuff.Type == Type; });
+		[&](const FActiveDebuff& Debuff) { return Debuff.Type == Type; });
 
 	if (IndexToRemove != INDEX_NONE)
 	{
@@ -154,7 +160,8 @@ void ASTCharacter::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	CheckInteraction();
 
-	for (const FActiveDebuff& Debuff : ActiveDebuffs)
+	const TArray<FActiveDebuff> DebuffsToTick = ActiveDebuffs;
+	for (const FActiveDebuff& Debuff : DebuffsToTick)
 	{
 		if (Debuff.EffectInstance)
 		{

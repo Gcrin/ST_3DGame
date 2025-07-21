@@ -6,6 +6,7 @@
 #include "Components/SphereComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "ST_3DGame/Character/STCharacter.h"
 
 // Sets default values
 ASTBaseItem::ASTBaseItem() : ParticleDuration(2.0f)
@@ -34,8 +35,13 @@ void ASTBaseItem::OnItemOverlap(
 	bool bFromSweep,
 	const FHitResult& SweepResult)
 {
-	if (OtherActor && OtherActor->ActorHasTag("Player"))
+	if (ASTCharacter* PlayerCharacter = Cast<ASTCharacter>(OtherActor))
 	{
+		if (OtherComp == PlayerCharacter->GetMagnetFieldComponent())
+		{
+			return;
+		}
+
 		ActivateItem(OtherActor);
 	}
 }
@@ -66,15 +72,15 @@ void ASTBaseItem::ActivateItem(AActor* Activator)
 	{
 		FTimerHandle DestroyParticleTimerHandle;
 		TWeakObjectPtr WeakParticle = Particle;
-						
+
 		GetWorld()->GetTimerManager().SetTimer(
 			DestroyParticleTimerHandle,
 			[WeakParticle]()
 			{
-					if (WeakParticle.IsValid())
-					{
-							WeakParticle->DestroyComponent();
-					}
+				if (WeakParticle.IsValid())
+				{
+					WeakParticle->DestroyComponent();
+				}
 			},
 			ParticleDuration,
 			false
